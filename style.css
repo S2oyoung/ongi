@@ -164,26 +164,37 @@ body[data-theme="white"] .bg { opacity: 0; }
 }
 
 /* 오브 */
-.orb { position: relative; display: grid; place-items: center; }
+/* Figma '루미 오브 · 흐름 · 심볼 파동': 상태 1→6을 0.8초씩 선형 스마트 애니메이트(한 바퀴 4.8초).
+   심볼은 회전 없이 204→212px로 살짝 숨쉬고, 심볼과 같은 모양의 파동 3개가 1.6초 간격으로 퍼지며 흐려져요. */
+.orb { position: relative; display: grid; place-items: center; --k: 1; }
 .orb-lg { width: min(280px, 68vw); aspect-ratio: 1; }
-.orb-md { width: min(210px, 52vw); aspect-ratio: 1; }
-.orb img { width: 73%; position: relative; z-index: 1; animation: spin 14s linear infinite, breathe 3.2s ease-in-out infinite; }
+.orb-md { width: min(210px, 52vw); aspect-ratio: 1; --k: .75; }
+.orb > * { grid-area: 1 / 1; }
 .orb .glow {
-  position: absolute; inset: 6%; border-radius: 50%;
-  background: radial-gradient(circle, rgba(253, 122, 138, .35) 0%, rgba(255, 176, 85, .18) 40%, rgba(255, 255, 255, 0) 70%);
-  filter: blur(8px);
-  animation: pulse 2.4s ease-in-out infinite;
+  width: 82%; aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle, #fd7a8a 0%, #ffb055 55%, transparent 72%);
+  opacity: .12; filter: blur(calc(40px * var(--k)));
 }
-.orb.searching .glow::before, .orb.searching .glow::after {
-  content: ""; position: absolute; inset: 10%; border-radius: 50%;
-  border: 2px solid rgba(253, 122, 138, .35);
-  animation: ripple 2.4s ease-out infinite;
+.orb .sym, .orb .wave { width: 72.9%; translate: 0 -1%; }
+.orb .sym { opacity: .92; animation: orbSym 4.8s linear infinite; }
+.orb .wave { opacity: 0; animation: orbWave 4.8s linear infinite; will-change: transform, opacity, filter; }
+.orb .wave.w2 { animation-delay: -1.6s; }
+.orb .wave.w3 { animation-delay: -3.2s; }
+@keyframes orbSym {
+  0%, 100% { transform: scale(1); }
+  16.667%, 83.333% { transform: scale(1.0147); }
+  33.333%, 66.667% { transform: scale(1.0294); }
+  50% { transform: scale(1.0392); }
 }
-.orb.searching .glow::after { animation-delay: 1.2s; }
-@keyframes spin { to { rotate: 360deg; } }
-@keyframes breathe { 50% { scale: 1.06; } }
-@keyframes pulse { 50% { opacity: .55; transform: scale(1.08); } }
-@keyframes ripple { from { transform: scale(.7); opacity: 1; } to { transform: scale(1.5); opacity: 0; } }
+@keyframes orbWave {
+  0%      { transform: scale(.980);  opacity: 0;   filter: blur(calc(1px * var(--k))); }
+  16.667% { transform: scale(1.147); opacity: .31; filter: blur(calc(2.4px * var(--k))); }
+  33.333% { transform: scale(1.314); opacity: .2;  filter: blur(calc(3.8px * var(--k))); }
+  50%     { transform: scale(1.480); opacity: .1;  filter: blur(calc(5.2px * var(--k))); }
+  66.667% { transform: scale(1.647); opacity: .03; filter: blur(calc(6.6px * var(--k))); }
+  83.333% { transform: scale(1.814); opacity: 0;   filter: blur(calc(8px * var(--k))); }
+  100%    { transform: scale(.980);  opacity: 0;   filter: blur(calc(1px * var(--k))); }
+}
 
 .finding { margin-top: clamp(28px, 6vh, 56px); color: var(--text-2); font-size: 16px; font-weight: 300; display: flex; align-items: center; gap: 10px; }
 .dots { display: inline-flex; gap: 7px; }
