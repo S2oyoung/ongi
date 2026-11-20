@@ -13,15 +13,15 @@
 
   const CATEGORIES = [
     { name: '조명·전원', icon: 'cat-power', items: ['조명', '전구', '스위치', '플러그', '멀티탭', '콘센트', '무드등', 'LED 스트립', '조광기', '전력 측정기'] },
-    { name: '공기·온도', icon: 'cat-air', items: ['에어컨', '냉난방 조절기', '보일러', '선풍기', '서큘레이터', '가습기', '제습기', '온습도 센서', '공기질 센서', '전기 히터'] },
-    { name: '출입·보안', icon: 'cat-security', items: ['도어락', '현관 센서', '창문 센서', '스마트 초인종', '홈캠', '모션 센서', '비상 버튼', '사이렌', '스마트 금고'] },
-    { name: '생활·청소', icon: 'cat-cleaning', items: ['로봇청소기', '물걸레 청소기', '세탁기', '건조기', '의류 관리기', '스마트 커튼', '블라인드', '전동 빨래건조대', '식물 조명'] },
-    { name: '주방·식생활', icon: 'cat-kitchen', items: ['냉장고', '정수기', '전자레인지', '오븐', '인덕션', '식기세척기', '커피머신', '전기포트', '에어프라이어', '밥솥'] },
-    { name: '미디어·네트워크', icon: 'cat-media', items: ['TV', '스마트 스피커', '사운드바', '셋톱박스', '프로젝터', '와이파이 공유기', '허브', '태블릿', '스마트 디스플레이'] },
-    { name: '건강·수면', icon: 'sleep', items: ['스마트워치', '매트리스 센서', '수면 조명', '체중계', '혈압계', '안마의자', '아로마 디퓨저', '백색소음기'] },
-    { name: '반려·식물', icon: 'cat-pets', items: ['자동 급식기', '급수기', '펫캠', '펫 도어', '식물 센서', '자동 물주기'] },
-    { name: '안전·에너지', icon: 'cat-energy', items: ['화재 감지기', '가스 감지기', '누수 센서', '가스 밸브 차단기', '태양광 모니터', '스마트 계량기', '전기차 충전기', '비상등', '일산화탄소 감지기'] },
-    { name: '생활 서비스', icon: 'cat-service', optional: true, items: ['택배 알림', '방문 돌봄 연동', '세탁 수거', '장보기 연동', '병원 예약 알림'] },
+    { name: '공기·온도', icon: 'cat-air', items: ['에어컨', '보일러', '온도 조절기', '난방기', '선풍기', '공기청정기', '환기 장치', '가습기', '제습기', '공기질 센서'] },
+    { name: '출입·보안', icon: 'cat-security', items: ['도어락', '초인종', '실내 카메라', '실외 카메라', '문열림 센서', '창문 센서', '동작 센서', '재실 센서', '사이렌'] },
+    { name: '생활·청소', icon: 'cat-cleaning', items: ['로봇청소기', '무선청소기', '세탁기', '건조기', '의류관리기', '커튼', '블라인드', '누수 센서', '수도 밸브'] },
+    { name: '주방·식생활', icon: 'cat-kitchen', items: ['냉장고', '김치냉장고', '식기세척기', '오븐', '인덕션', '밥솥', '전자레인지', '커피머신', '정수기', '음식물처리기'] },
+    { name: '미디어·네트워크', icon: 'cat-media', items: ['TV', '셋톱박스', '스피커', '사운드바', '프로젝터', '스트리밍 기기', '공유기', '허브', '리모컨'] },
+    { name: '건강·수면', icon: 'sleep', items: ['체중계', '혈압계', '체온계', '수면 센서', '매트리스', '침대', '스마트워치', '운동기구'] },
+    { name: '반려·식물', icon: 'cat-pets', items: ['급식기', '급수기', '반려동물 카메라', '자동 화장실', '화분 센서', '관수 장치'] },
+    { name: '안전·에너지', icon: 'cat-energy', items: ['연기 감지기', '가스 감지기', '일산화탄소 감지기', '진동 센서', '누전 감지기', '차단기', '전기차 충전기', '태양광 인버터', '가정용 배터리'] },
+    { name: '생활 서비스', icon: 'cat-service', optional: true, items: ['음식 배달', '장보기', '택배·배송', '정기 배송', '방문 서비스'] },
   ];
 
   const MOODS = [
@@ -110,9 +110,12 @@
     if (e.target.closest('.back')) { e.preventDefault(); back(); }
   });
 
+  // Figma 프로토타입의 '뒤로' 연결 그대로
+  const BACK_TO = { evidence: 'home', save: 'home', adjust: 'home', settings: 'home', saved: 'save', savedList: 'saved', devices: 'settings', choose: 'found' };
   function back() {
-    if (stack.length > 1) history.back();
-    else go(store.get('onboarded', false) ? 'home' : 'welcome', { replace: true });
+    const target = BACK_TO[current] || (store.get('onboarded', false) ? 'home' : 'welcome');
+    if (stack.length > 1 && stack[stack.length - 2] === target) history.back();
+    else go(target, { replace: true });
   }
 
   /* ───────── 토스트 ───────── */
@@ -129,14 +132,13 @@
   let searchTimer;
   enterHooks.search = () => {
     clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => { if (current === 'search') go('found', { replace: true }); }, 3200);
+    searchTimer = setTimeout(() => { if (current === 'search') go('found', { replace: true }); }, 3000);
   };
 
   function chipGrid(el, list) {
     el.innerHTML = list.map((n, i) => `<div class="found-chip" style="animation-delay:${i * 70}ms">${n}</div>`).join('');
   }
   enterHooks.found = () => chipGrid($('#foundGrid'), AUTO_DEVICES);
-  chipGrid($('#autoGrid'), AUTO_DEVICES);
 
   /* 직접 선택 */
   const catList = $('#catList');
@@ -176,10 +178,11 @@
     });
   }
 
-  $$('.tab').forEach(tab => tab.addEventListener('click', () => {
-    $$('.tab').forEach(t => t.classList.toggle('on', t === tab));
-    $$('.tab-pane').forEach(p => p.classList.toggle('on', p.dataset.pane === tab.dataset.tab));
-  }));
+  // Figma: '자동 연결' 탭을 누르면 '찾은 기기' 화면(111)으로 이동
+  $('.tab[data-tab="auto"]').addEventListener('click', () => {
+    if (stack.length > 1 && stack[stack.length - 2] === 'found') history.back();
+    else go('found');
+  });
 
   /* 바텀시트 */
   const sheet = $('#sheet');
@@ -197,7 +200,7 @@
     sheet.classList.remove('open');
     sheet.setAttribute('aria-hidden', 'true');
   }
-  $('#addSelected').addEventListener('click', openSheet);
+  $('#addSelected').addEventListener('click', () => { if (state.picked.size > 0) openSheet(); else toast('추가할 기기를 먼저 골라주세요'); });
   $$('[data-close]', sheet).forEach(b => b.addEventListener('click', () => closeSheet()));
   $('#sheetAdd').addEventListener('click', () => {
     state.added = [...new Set([...state.added, ...state.picked])];
@@ -213,34 +216,25 @@
 
   /* 집 알아가기 (0.09초마다 1%씩) */
   let learnTimer;
-  const LEARN_STEPS = [
-    [0, '집 안을 둘러보기 시작했어요'],
-    [15, '거실을 둘러보고 있어요'],
-    [40, '주방을 살펴보고 있어요'],
-    [62, '현관을 확인하고 있어요'],
-    [82, '침실을 둘러보고 있어요'],
-    [100, '집 안을 다 둘러봤어요'],
-  ];
+  const LEARN_MSG = [[100, '집 안을 다 둘러봤어요'], [80, '침실을 찾았어요'], [60, '현관을 찾았어요'], [41, '주방을 찾았어요'], [21, '거실을 찾았어요'], [0, '집 안을 둘러보기 시작했어요']];
+  const LEARN_STAT = [[80, '찾은 공간 4곳 · 기기 8개'], [60, '찾은 공간 3곳 · 기기 6개'], [41, '찾은 공간 2곳 · 기기 5개'], [21, '찾은 공간 1곳 · 기기 3개'], [0, '찾은 공간 0곳 · 기기 0개']];
+  let learnDone;
   enterHooks.learn = () => {
-    clearInterval(learnTimer);
-    const total = 6 + state.added.length;
+    clearInterval(learnTimer); clearTimeout(learnDone);
     let p = 0;
     const bar = $('#learnBar'), msg = $('#learnMsg'), stat = $('#learnStat');
     const tick = () => {
       bar.style.width = p + '%';
-      msg.textContent = LEARN_STEPS.filter(s => p >= s[0]).pop()[1];
-      const spaces = LEARN_STEPS.slice(1, 5).filter(s => p >= s[0]).length;
-      stat.textContent = `찾은 공간 ${spaces}곳 · 기기 ${Math.round(total * p / 100)}개`;
+      msg.textContent = LEARN_MSG.find(x => p >= x[0])[1];
+      stat.textContent = LEARN_STAT.find(x => p >= x[0])[1];
     };
     tick();
     learnTimer = setInterval(() => {
       if (current !== 'learn') return clearInterval(learnTimer);
-      p += 1; tick();
-      if (p >= 100) {
-        clearInterval(learnTimer);
-        setTimeout(() => current === 'learn' && go('ready', { replace: true }), 700);
-      }
+      if (p < 100) { p += 1; tick(); }
     }, 90);
+    // Figma: 11.5초 뒤 '이제, 함께 시작해요'(113)로 이동
+    learnDone = setTimeout(() => current === 'learn' && go('ready', { replace: true }), 11500);
   };
   enterHooks.ready = () => { $('#readyDevices').textContent = 6 + state.added.length; };
   enterHooks.home = () => { store.set('onboarded', true); setGreeting(); };
@@ -316,10 +310,13 @@
   document.addEventListener('click', e => {
     const b = e.target.closest('[data-mood]');
     if (!b) return;
+    // Figma: 분위기를 고르면 그 분위기가 선택된 채로 '분위기 조절' 화면으로 이동
     const m = moodsView()[+b.dataset.mood];
     setHomeMood(m);
-    toast(`‘${m.title}’ 분위기를 켰어요`);
-    setTimeout(() => go('home'), 650);
+    $('#livePreview').style.setProperty('--img', `url(assets/mood/${m.img}.jpg)`);
+    $('#liveTitle').textContent = m.title;
+    if (b.classList.contains('on-btn')) toast(`‘${m.title}’ 분위기를 켰어요`);
+    go('adjust');
   });
 
   enterHooks.saved = () => {
