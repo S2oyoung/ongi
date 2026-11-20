@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f7f3fb" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="ongi" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="description" content="ongi — 집 안의 기척을 읽고 분위기를 맞춰 주는 홈 IoT 동반자" />
+  <title>ongi 온기</title>
+  <link rel="icon" type="image/png" href="assets/ongi-symbol.png" />
+  <link rel="apple-touch-icon" href="assets/ongi-symbol.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-theme="aurora">
+<div class="app" id="app">
+  <div class="bg" aria-hidden="true"></div>
+
+  <!-- ───────── 온보딩 1 · 환영 ───────── -->
+  <section class="screen onb" data-screen="welcome">
+    <div class="onb-center">
+      <h1 class="grad-title">반가워요! ongi에요.</h1>
+      <p class="onb-sub">앞으로 함께할 당신을 조금 더 알고 싶어요.<br />몇 가지 질문으로 시작해 볼까요?</p>
+      <button class="pill welcome-btn" data-go="theme">시작하기</button>
+    </div>
+  </section>
+
+  <!-- ───────── 온보딩 2 · 테마 선택 ───────── -->
+  <section class="screen onb" data-screen="theme">
+    <header class="onb-head">
+      <p class="eyebrow">첫 번째 질문</p>
+      <h1 class="onb-title">온기와 지낼 색을 골라주세요.</h1>
+      <p class="onb-sub">고른 색은 앱 전체에 적용돼요.<br />나중에 설정에서 언제든 바꿀 수 있어요.</p>
+    </header>
+    <div class="onb-body">
+      <div class="theme-pick" role="radiogroup" aria-label="테마">
+        <button class="theme-opt" role="radio" data-theme-opt="aurora">
+          <img src="assets/theme-aurora.svg" alt="" />
+          <span>오로라</span>
+          <i class="check" aria-hidden="true"></i>
+        </button>
+        <button class="theme-opt" role="radio" data-theme-opt="white">
+          <img src="assets/theme-white.svg" alt="" />
+          <span>화이트</span>
+          <i class="check" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+    <div class="onb-foot">
+      <button class="pill" data-go="search">이 분위기로 할게요</button>
+    </div>
+  </section>
+
+  <!-- ───────── 온보딩 3 · 기기 찾는 중 ───────── -->
+  <section class="screen onb" data-screen="search">
+    <header class="onb-head">
+      <h1 class="onb-title">우리 집 IoT 기기를 찾고 있어요.</h1>
+      <p class="onb-sub">온기가 가까운 기기의 신호를<br />하나씩 듣고 있어요.</p>
+    </header>
+    <div class="onb-body center">
+      <div class="orb orb-lg searching"><span class="glow"></span><img src="assets/ongi-symbol.png" alt="" /></div>
+      <p class="finding">신호를 찾는 중 <span class="dots"><i></i><i></i><i></i></span></p>
+    </div>
+    <div class="onb-foot"></div>
+  </section>
+
+  <!-- ───────── 온보딩 4 · 기기 찾음 ───────── -->
+  <section class="screen onb" data-screen="found">
+    <header class="onb-head">
+      <h1 class="onb-title">우리 집 기기를 찾았어요.</h1>
+      <p class="onb-sub">가까운 기기의 신호를 따라<br />연결 가능한 기기를 먼저 연결했어요.</p>
+    </header>
+    <div class="onb-body">
+      <p class="list-label">자동으로 연결된 기기 <b>6</b></p>
+      <div class="found-grid" id="foundGrid"></div>
+    </div>
+    <div class="onb-foot">
+      <button class="pill" data-go="choose">다른 기기 추가하기</button>
+      <button class="text-link" data-go="learn">이대로 계속하기</button>
+    </div>
+  </section>
+
+  <!-- ───────── 온보딩 5 · 기기 직접 고르기 ───────── -->
+  <section class="screen onb" data-screen="choose">
+    <header class="onb-head">
+      <h1 class="onb-title">함께 쓸 기기를 골라주세요.</h1>
+      <p class="onb-sub">자동으로 찾지 못한 기기는<br />아래에서 직접 추가할 수 있어요.</p>
+    </header>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="auto">자동 연결 <span>6</span></button>
+      <button class="tab on" role="tab" data-tab="manual">직접 선택 <span id="manualCount">0</span></button>
+    </div>
+    <div class="choose-scroll">
+      <div class="tab-pane" data-pane="auto"><div class="found-grid small" id="autoGrid"></div></div>
+      <div class="tab-pane on" data-pane="manual" id="catList"></div>
+    </div>
+    <div class="onb-foot tight">
+      <p class="hint">고른 기기는 연결 방법을 안내해 드려요.</p>
+      <button class="pill" id="addSelected">선택한 기기 추가하기</button>
+      <button class="text-link" data-go="learn">나중에 추가할게요</button>
+    </div>
+  </section>
+
+  <!-- ───────── 온보딩 6 · 집 알아가는 중 ───────── -->
+  <section class="screen onb" data-screen="learn">
+    <header class="onb-head">
+      <h1 class="onb-title">ongi가 집을 알아가요.</h1>
+      <p class="onb-sub">ongi가 집 안을 한 바퀴 돌면서<br />어떤 공간에 어떤 기기가 있는지 알아가고 있어요.</p>
+    </header>
+    <div class="onb-body center">
+      <div class="orb orb-md"><span class="glow"></span><img src="assets/ongi-symbol.png" alt="" /></div>
+      <div class="progress"><i id="learnBar"></i></div>
+      <div class="learn-row">
+        <span id="learnMsg">집 안을 둘러보기 시작했어요</span>
+        <span id="learnStat">찾은 공간 0곳 · 기기 0개</span>
+      </div>
+      <p class="hint">추정한 공간은 나중에 바꿀 수 있어요.</p>
+    </div>
+    <div class="onb-foot"></div>
+  </section>
+
+  <!-- ───────── 온보딩 7 · 시작 ───────── -->
+  <section class="screen onb" data-screen="ready">
+    <header class="onb-head">
+      <h1 class="onb-title">이제, 함께 시작해요.</h1>
+      <p class="onb-sub">ongi가 우리 집을 조금 알게 됐어요.</p>
+    </header>
+    <div class="onb-body center">
+      <div class="stats">
+        <div><small>연결한 기기</small><p><b id="readyDevices">6</b><em>개</em></p></div>
+        <span class="vr"></span>
+        <div><small>알아본 공간</small><p><b>4</b><em>곳</em></p></div>
+      </div>
+      <p class="spaces">거실 · 주방 · 현관 · 침실</p>
+      <p class="spaces-sub">조명과 스피커부터 무드등까지 하나씩 둘러봤어요.</p>
+      <p class="ready-note">생활 리듬이나 좋아하는 분위기는<br />함께 지내며 천천히 알아갈게요.</p>
+    </div>
+    <div class="onb-foot">
+      <p class="hint">기기와 공간은 설정에서 언제든 바꿀 수 있어요.</p>
+      <button class="pill" data-go="home" data-replace>시작하기</button>
+    </div>
+  </section>
+
+  <!-- ───────── 홈 ───────── -->
+  <section class="screen page" data-screen="home">
+    <header class="home-head">
+      <div>
+        <p class="greet" id="greet">좋은 저녁이에요</p>
+        <h1>오늘의 기척을<br />알려드릴게요.</h1>
+      </div>
+      <button class="round-btn" data-go="settings" aria-label="설정"><img src="assets/ic/settings.svg" alt="" /></button>
+    </header>
+    <div class="page-body home-body">
+      <div class="stage glass">
+        <div class="mood-graphic big" id="homeMood" style="--img:url(assets/mood/comfort.jpg)"></div>
+        <span class="badge" id="homeBadge">편안해지는 중</span>
+        <p class="stage-text" id="homeText">지금은 조금 편안해 보여요.</p>
+      </div>
+      <button class="card evidence" data-go="evidence">
+        <div class="card-row"><b>지안의 상태를 알아봤어요.</b><span class="more-link">자세히 ›</span></div>
+        <div class="timeline">
+          <i class="line"></i>
+          <div><span class="dot d1"></span><b>18:42</b><small>문 열림</small></div>
+          <div><span class="dot d2"></span><b>18:50</b><small>한숨 감지</small></div>
+          <div><span class="dot d3"></span><b>19:05</b><small>느린 움직임</small></div>
+          <div><span class="dot d4"></span><b>19:20</b><small>움직임 없음</small></div>
+        </div>
+      </button>
+      <div class="actions">
+        <button class="card action" data-go="save"><span class="bubble save"><img src="assets/ic/save.svg" alt="" /></span>분위기 저장</button>
+        <button class="card action" data-go="adjust"><span class="bubble adjust"><img src="assets/ic/adjust.svg" alt="" /></span>분위기 조절</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── 기척의 근거 ───────── -->
+  <section class="screen page" data-screen="evidence">
+    <header class="sub-head"><button class="back" aria-label="뒤로"><img src="assets/ic/back.svg" alt="" /></button><h1>기척의 근거</h1></header>
+    <div class="page-body">
+      <div class="glass summary">
+        <span class="state-badge">편안해지는 중</span>
+        <p>귀가 직후에는 지쳐 보였지만,<br />점차 움직임이 안정됐어요.</p>
+      </div>
+      <div class="card ev-list">
+        <h2>감지된 기척 포인트</h2>
+        <p class="caption">오감 센서 중 3개 감각에서 이상을 감지했어요. (3/5)</p>
+        <div class="ev-rows">
+          <i class="vline"></i>
+          <div class="ev-row"><span class="dot d1"></span><div><b>18:42</b><p>현관문이 열렸어요</p><small>도어 센서</small></div><em class="tag grey">귀가</em></div>
+          <div class="ev-row"><span class="dot d2"></span><div><b>18:43</b><p>짧은 한숨이 감지됐어요</p><small>공간 마이크 · 내용 저장 안 함</small></div><em class="tag">피로 신호</em></div>
+          <div class="ev-row"><span class="dot d3"></span><div><b>18:46</b><p>움직임 속도가 평소보다 느려요</p><small>실내 동작 센서</small></div><em class="tag">긴장·피로</em></div>
+          <div class="ev-row"><span class="dot d4"></span><div><b>19:06</b><p>심박수가 높아졌어요</p><small>체내 심박수 감지</small></div><em class="tag">긴장</em></div>
+        </div>
+      </div>
+      <div class="card logic">
+        <b>온기가 학습을 마쳤어요.</b>
+        <p>귀가 직후 피로 신호를 감지해서 분위기를 바꿨지만, 이후에도 계속되는 심박수로, 집에 아로마 향을 추가했어요.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── 분위기 저장 ───────── -->
+  <section class="screen page has-cta" data-screen="save">
+    <header class="sub-head"><button class="back" aria-label="뒤로"><img src="assets/ic/back.svg" alt="" /></button><h1>분위기 저장</h1></header>
+    <div class="page-body">
+      <div class="glass preview">
+        <div class="mood-graphic mid" style="--img:url(assets/mood/tired.jpg)"></div>
+        <b>오늘의 온기</b>
+        <small>빛 · 움직임 · 소리 · 촉각 · 향</small>
+      </div>
+      <label class="field-label" for="moodName">이 분위기의 이름</label>
+      <input class="card field" id="moodName" type="text" value="지친 날의 포근함" maxlength="20" autocomplete="off" />
+      <div class="card when">
+        <p class="when-q">ongi가 언제 다시 켜 줄까요?</p>
+        <button class="opt on" data-when="auto">
+          <span class="radio"></span>
+          <span class="opt-body">
+            <span class="t">지금과 비슷한 상황이 오면</span>
+            <span class="s">Ongi가 비슷하다고 느낄 때 알아서 켜요</span>
+            <span class="memo"><span>Ongi가 기억한 지금</span>평일 저녁 7시쯤 · 퇴근 직후 · 조금 지쳐 보임</span>
+          </span>
+        </button>
+        <button class="opt" data-when="manual">
+          <span class="radio"></span>
+          <span class="opt-body"><span class="t">내가 고를 때만</span><span class="s">자동으로 켜지 않아요</span></span>
+        </button>
+        <hr />
+        <label class="switch-row">
+          <span><span class="t">켜기 전에 먼저 물어보기</span><span class="s">끄면 ongi가 알아서 조용히 켜요</span></span>
+          <input type="checkbox" class="switch" checked />
+        </label>
+      </div>
+      <button class="card mini-timeline" data-go="saved">
+        <div class="card-row"><b>저장한 분위기 보기</b><span class="more-link">자세히 ›</span></div>
+        <div class="timeline three">
+          <i class="line"></i>
+          <div><span class="dot d2"></span><b>26.03.10</b><small>지안픽 분위기</small></div>
+          <div><span class="dot d3"></span><b>26.04.17</b><small>지친 하루의 위로</small></div>
+          <div><span class="dot d4"></span><b>26.05.26</b><small>신나는 하루에용</small></div>
+        </div>
+      </button>
+    </div>
+    <div class="cta-bar"><button class="cta" id="saveMood">이 분위기 저장할게요</button></div>
+  </section>
+
+  <!-- ───────── 저장한 분위기 (카드) ───────── -->
+  <section class="screen page has-cta" data-screen="saved">
+    <header class="sub-head"><button class="back" aria-label="뒤로"><img src="assets/ic/back.svg" alt="" /></button><h1>저장한 분위기</h1></header>
+    <div class="page-body saved-body">
+      <div class="toast-inline" id="savedToast"><i></i><span id="savedToastText">‘하루 끝의 포근함’을 저장했어요</span></div>
+      <div class="summary-row"><span>분위기 <b class="moodCount">6</b>개</span><em>최근 저장 순</em></div>
+      <div class="carousel" id="carousel"></div>
+      <div class="pager" id="pager"></div>
+      <button class="chip-link" data-go="savedList">목록으로 보기 <img src="assets/ic/more.svg" alt="" /></button>
+    </div>
+    <div class="cta-bar"><button class="cta" data-go="adjust">새 분위기 만들기</button></div>
+  </section>
+
+  <!-- ───────── 저장한 분위기 (목록) ───────── -->
+  <section class="screen page has-cta" data-screen="savedList">
+    <header class="sub-head"><button class="back" aria-label="뒤로"><img src="assets/ic/back.svg" alt="" /></button><h1>저장한 분위기</h1></header>
+    <div class="page-body">
+      <div class="summary-row"><span>분위기 <b class="moodCount">6</b>개</span><em>최근 저장 순</em></div>
+      <div class="card mood-list" id="moodList"></div>
+    </div>
+    <div class="cta-bar"><button class="cta" data-go="adjust">새 분위기 만들기</button></div>
+  </section>
+
+  <!-- ───────── 분위기 조절 ───────── -->
+  <section class="screen page has-cta" data-screen="adjust">
+    <header class="sub-head"><button class="back" aria-label="뒤로"><img src="assets/ic/back.svg" alt="" /></button><h1>분위기 조절</h1></header>
+    <div class="page-body adjust-body">
+      <div class="glass live">
+        <div class="mood-graphic sm" id="livePreview" style="--img:url(assets/mood/tired.jpg)"></div>
+        <div><b>포근하고 조용하게</b><p>조절하면 로봇의 빛과 움직임이<br />바로 미리보기로 반응해요</p></div>
+      </div>
+
+      <div class="group"><p class="group-title">적용할 공간</p>
+        <div class="card pad"><div class="seg" data-seg><button>집 전체</button><button class="on">거실</button><button>침실</button><button>주방</button></div></div>
+      </div>
+
+      <div class="group"><p class="group-title"><img src="assets/ic/light.svg" alt="" />조명</p>
+        <div class="card pad">
+          <div class="slider" data-suffix="%"><div class="sl-head"><span>밝기</span><b>40%</b></div><input type="range" min="0" max="100" step="5" value="40" /></div>
+          <hr />
+          <div class="slider" data-kelvin><div class="sl-head"><span>색온도</span><b>2700K</b></div><input type="range" min="0" max="100" value="20" /><div class="sl-ends"><span>따뜻하게</span><span>차갑게</span></div></div>
+        </div>
+      </div>
+
+      <div class="group"><p class="group-title"><img src="assets/ic/moodlight.svg" alt="" />무드등</p>
+        <div class="card pad">
+          <label class="switch-row"><span><span class="t">무드등 켜기</span><span class="s">침실 · 거실 무드등</span></span><input type="checkbox" class="switch" checked /></label>
+          <hr />
+          <div class="row-block"><span class="t">빛 색</span>
+            <div class="chips" data-chips>
+              <button style="--c:#FD7A8A">코랄</button><button class="on" style="--c:#FFB055">살구</button><button style="--c:#FED499">크림</button><button style="--c:#F4A6B8">로즈</button><button style="--c:#7C8BE0">새벽</button>
+            </div>
+          </div>
+          <hr />
+          <div class="row-block"><span class="t">빛 효과</span><div class="seg" data-seg><button>고정</button><button class="on">숨쉬기</button><button>촛불</button></div></div>
+        </div>
+      </div>
+
+      <div class="group"><p class="group-title"><img src="assets/ic/music.svg" alt="" />음악 · 스피커</p>
+        <div class="card pad">
+          <button class="picker" data-options="재즈,로파이,피아노,빗소리,숲 소리,어쿠스틱"><span class="t">장르</span><span class="v">재즈</span></button>
+          <hr />
+          <button class="picker" data-options="거실 스피커,침실 스피커,모든 스피커"><span class="t">스피커</span><span class="v">거실 스피커</span></button>
+          <hr />
+          <div class="slider" data-suffix="%"><div class="sl-head"><span>볼륨</span><b>30%</b></div><input type="range" min="0" max="100" step="5" value="30" /></div>
+        </div>
+      </div>
+
+      <div class="group"><p class="group-title"><img src="assets/ic/temp.svg" alt="" />온도 · 공기</p>
+        <div class="card pad">
+          <div class="stepper"><span class="t">실내 온도</span><div><button data-step="-1" aria-label="낮추기"><img src="assets/ic/minus.svg" alt="" /></button><b id="tempVal">22°</b><button data-step="1" aria-label="높이기"><img src="assets/ic/plus.svg" alt="" /></button></div></div>
+          <hr />
+          <div class="slider" data-suffix="%"><div class="sl-head"><span>습도 · 가습기</span><b>45%</b></div><input type="range" min="0" max="100" step="5" value="45" /></div>
+          <hr />
+          <div class="row-block"><span class="t">공기청정기</span><div class="seg" data-seg><button class="on">조용히</button><button>자동</button><button>강하게</button></div></div>
+        </div>
+      </div>
+
+      <div class="group"><p class="group-title"><img src="assets/ic/diffuser.svg" alt="" />향</p>
+        <div class="card pad">
+          <button class="picker" data-options="라벤더,베르가못,시더우드,유칼립투스,화이트 머스크"><span class="t">디퓨저 향</span><span class="v">라벤더</span></button>
+          <hr />
+          <div class="row-block"><span class="t">세기</span><div class="seg" data-seg><button class="on">은은하게</button><button>보통</button><button>진하게</button></div></div>
+        </div>
+      </div>
+
+      <div class="group"><p class="group-title"><img src="assets/ic/curtain.svg" alt="" />커튼 · TV</p>
+        <div class="card pad">
+          <div class="slider" data-suffix="%"><div class="sl-head"><span>커튼 열림</span><b>30%</b></div><input type="range" min="0" max="100" step="10" value="30" /><div class="sl-ends"><span>닫힘</span><span>열림</span></div></div>
+          <hr />
+          <label class="switch-row"><span><span class="t">TV 화면 끄기</span><span class="s">분위기를 켜면 TV는 대기 상태로</span></span><input type="checkbox" class="switch" checked /></label>
+        </div>
+      </div>
+
+      <div class="group"><p class="group-title">ongi</p>
+        <div class="card pad">
+          <div class="slider" data-suffix="%"><div class="sl-head"><span>ongi의 빛</span><b>60%</b></div><input type="range" min="0" max="100" step="5" value="60" /></div>
+          <hr />
+          <div class="row-block"><span class="t">움직임</span><div class="seg" data-seg><button>가만히</button><button class="on">살짝</button><button>자주</button></div></div>
+          <hr />
+          <div class="row-block"><span class="t">말 걸기</span><div class="seg" data-seg><button class="on">조용히</button><button>가끔</button><button>자주</button></div></div>
+        </div>
+      </div>
+
+      <div class="group"><p class="group-title">유지 시간</p>
+        <div class="card pad">
+          <div class="seg" data-seg><button>30분</button><button>1시간</button><button class="on">잠들 때까지</button></div>
+          <p class="s small-note">잠들면 ongi가 조명과 소리를 천천히 줄여요.</p>
+        </div>
+      </div>
+    </div>
+    <div class="cta-bar"><button class="cta" data-go="save">이 분위기 저장할게요</button></div>
+  </section>
+
+  <!-- ───────── 설정하기 ───────── -->
+  <section class="screen page" data-screen="settings">
+    <header class="sub-head"><button class="back" aria-label="뒤로"><img src="assets/ic/back.svg" alt="" /></button><h1>설정하기</h1></header>
+    <div class="page-body">
+      <div class="glass robot">
+        <img class="avatar" src="assets/avatar.png" alt="ongi 로봇" />
+        <div><b>ongi</b><small>연결됨 · 배터리 82% · 방석 위에서 충전 중</small></div>
+      </div>
+      <button class="glass link-row" data-go="devices">
+        <span><span class="t">우리 집 기기</span><span class="s">거실 · 침실 · 주방 · 현관</span></span>
+        <em><span class="deviceTotal">13</span>개</em><img class="chev" src="assets/ic/more.svg" alt="" />
+      </button>
+      <button class="glass link-row" id="themeRow">
+        <span><span class="t">테마</span><span class="s">온기와 지낼 색</span></span>
+        <em id="themeName">오로라</em><img class="chev" src="assets/ic/more.svg" alt="" />
+      </button>
+      <div class="card perm">
+        <h2>감지 권한</h2>
+        <div class="perm-row"><img src="assets/ic/watch.svg" alt="" /><span>스마트워치 심박</span><button class="pill-tag on">켜짐</button></div>
+        <div class="perm-row"><img src="assets/ic/mic.svg" alt="" /><span>기기 내 음성 분석</span><button class="pill-tag on">켜짐</button></div>
+        <div class="perm-row"><img src="assets/ic/camera.svg" alt="" /><span>카메라</span><button class="pill-tag">꺼짐</button></div>
+        <div class="perm-row"><img src="assets/ic/gps.svg" alt="" /><span>GPS 위치</span><button class="pill-tag on">켜짐</button></div>
+      </div>
+      <div class="card auto">
+        <h2>자동화 허용 <img class="chev" src="assets/ic/more.svg" alt="" /></h2>
+        <div class="auto-row"><span>빛 · 온도 · 향</span><b class="ok">자동 실행</b></div>
+        <div class="auto-row"><span>연락 · 주문 · 외부 공유</span><b class="ask">항상 묻기</b></div>
+      </div>
+      <div class="card privacy">
+        <b>음성 내용은 저장하지 않아요</b>
+        <p>상태 신호만 기기 안에서 분석해요 ›</p>
+      </div>
+      <button class="text-link restart" id="restart">처음 화면부터 다시 보기</button>
+    </div>
+  </section>
+
+  <!-- ───────── 우리 집 기기 ───────── -->
+  <section class="screen page has-cta" data-screen="devices">
+    <header class="sub-head"><button class="back" aria-label="뒤로"><img src="assets/ic/back.svg" alt="" /></button><h1>우리 집 기기</h1></header>
+    <div class="page-body">
+      <div class="dev-summary">
+        <p><b class="deviceTotal">13</b>개의 기기가 연결돼 있어요</p>
+        <small>분위기를 켜면 ongi가 이 기기들을 함께 움직여요.</small>
+      </div>
+      <div id="deviceGroups"></div>
+    </div>
+    <div class="cta-bar"><button class="cta" data-go="choose">기기 추가하기</button></div>
+  </section>
+
+  <!-- ───────── 바텀시트 · 기기 추가 확인 ───────── -->
+  <div class="sheet-wrap" id="sheet" aria-hidden="true">
+    <button class="dim" data-close aria-label="닫기"></button>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+      <span class="handle"></span>
+      <h2 id="sheetTitle"><em id="sheetCount">0개</em>의 기기를 추가할까요?</h2>
+      <p>선택한 기기는 하나씩 연결 방법을 안내해 드려요.</p>
+      <div class="sheet-list" id="sheetList"></div>
+      <button class="pill wide" id="sheetAdd">추가하기</button>
+      <button class="text-link" data-close>다시 고를게요</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

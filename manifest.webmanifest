@@ -1,0 +1,11 @@
+{
+  "name": "ongi 온기",
+  "short_name": "ongi",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f3fb",
+  "theme_color": "#f7f3fb",
+  "icons": [{ "src": "assets/ongi-symbol.png", "sizes": "480x480", "type": "image/png", "purpose": "any" }]
+}
